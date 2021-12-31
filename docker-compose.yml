@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  database:
+    image: mariadb:${TAG:-latest}
+    container_name: innoacad_mariadb
+    ports:
+      - 3306:3306
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+  
+  migrate:
+    container_name: innoacad_migrate
+    build:
+      context: ./migrate
+      dockerfile: ./Dockerfile
+    command: "bash ./db_migrate.sh"
+    depends_on:
+      - database
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+
+  api:
+    container_name: innoacad_server
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile
+    working_dir: /app/api
+    command: "gunicorn v1.api:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    depends_on:
+      - database
+      - migrate
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./api:/app/api
