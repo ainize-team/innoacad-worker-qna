@@ -12,6 +12,18 @@ router = APIRouter()
 def getUser(
     username: str, db: Session = Depends(get_db),
 ):
+    """
+    Get User's information
+
+    - **id**: user id
+    - **username**: username
+    - **docker_image**: docker image in use
+    - **version**: container version
+    - **gpu_device**: GPU device id in use
+    - **port_range**: port range in use
+    \f
+    :param username: username
+    """
     user = db.query(UserModel).filter(UserModel.username == username).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User Not Found")
