@@ -17,7 +17,6 @@ services:
     build:
       context: ./migrate
       dockerfile: ./Dockerfile
-    command: "bash ./db_migrate.sh"
     depends_on:
       - database
     environment:
@@ -33,7 +32,6 @@ services:
       context: ./api
       dockerfile: ./Dockerfile
     working_dir: /app/api
-    command: "gunicorn v1.api:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
     restart: unless-stopped
     ports:
       - 8000:8000
