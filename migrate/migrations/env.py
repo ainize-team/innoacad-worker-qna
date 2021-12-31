@@ -10,8 +10,11 @@ import os
 # access to the values within the .ini file in use.
 config = context.config
 
-if not config.get_main_option('sqlalchemy.url'):
-    config.set_main_option('sqlalchemy.url', f'mysql+pymysql://{os.environ["DB_USER"]}:{os.environ["DB_PASS"]}@database:{os.environ["DB_PORT"]}/{os.environ["DB_NAME"]}')
+if not config.get_main_option("sqlalchemy.url"):
+    config.set_main_option(
+        "sqlalchemy.url",
+        f'mysql+pymysql://{os.environ["DB_USER"]}:{os.environ["DB_PASS"]}@database:{os.environ["DB_PORT"]}/{os.environ["DB_NAME"]}',
+    )
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -67,9 +70,7 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

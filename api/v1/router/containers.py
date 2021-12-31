@@ -8,6 +8,7 @@ from core.schemas.container_schema import ContainerListResponse
 router = APIRouter()
 client = docker.from_env()
 
+
 @router.get("/", response_model=ContainerListResponse)
 def getContainerList():
     containerList = []
@@ -28,10 +29,9 @@ def getContainerList():
         "result": containerList,
     }
 
+
 @router.get("/{name}/stop")
-def containerStop(
-    name: str,
-):
+def containerStop(name: str,):
     try:
         client.containers.get(name).stop()
     except docker.errors.NotFound:
@@ -42,10 +42,9 @@ def containerStop(
         "status": "SUCCESS",
     }
 
+
 @router.get("/{name}/remove")
-def containerDelete(
-    name: str,
-):
+def containerDelete(name: str,):
     try:
         client.containers.get(name).remove()
     except docker.errors.NotFound:
@@ -56,10 +55,9 @@ def containerDelete(
         "status": "SUCCESS",
     }
 
+
 @router.get("/{name}/restart")
-def containerRestart(
-    name: str,
-):
+def containerRestart(name: str,):
     try:
         client.containers.get(name).restart()
     except docker.errors.NotFound:

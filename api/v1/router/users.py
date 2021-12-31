@@ -7,10 +7,10 @@ from core.schemas.user_schema import UserBase
 
 router = APIRouter()
 
+
 @router.get("/{username}", response_model=UserBase)
 def getUser(
-    username: str,
-    db: Session = Depends(get_db),
+    username: str, db: Session = Depends(get_db),
 ):
     user = db.query(UserModel).filter(UserModel.username == username).first()
     if user is None:

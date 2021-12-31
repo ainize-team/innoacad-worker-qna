@@ -4,6 +4,7 @@ from sqlalchemy.sql.expression import null
 
 from core.database import Base
 
+
 class UserModel(Base):
     __tablename__ = "users"
 
