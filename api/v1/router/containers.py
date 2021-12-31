@@ -6,7 +6,7 @@ from starlette.responses import JSONResponse
 from core.schemas.container_schema import ContainerListResponse
 
 router = APIRouter()
-client = docker.from_env()
+client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 
 @router.get("/", response_model=ContainerListResponse)
