@@ -24,12 +24,12 @@ def getContainerList():
         containers = client.containers.list(all=True)
     except docker.errors.APIError:
         raise HTTPException(status_code=500, detail="Docker Error")
-    for index in range(len(containers)):
+    for container in containers:
         containerInfo = {
-            "id": containers[index].short_id,
-            "image": containers[index].image.tags[0],
-            "name": containers[index].name,
-            "status": containers[index].status,
+            "id": container.short_id,
+            "image": container.image.tags[0],
+            "name": container.name,
+            "status": container.status,
         }
         containerList.append(containerInfo)
     return {
