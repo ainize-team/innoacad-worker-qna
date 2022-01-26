@@ -1,9 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 import docker
-from fastapi.encoders import jsonable_encoder
-from starlette.responses import JSONResponse
+from sqlalchemy.orm import Session
 
-from core.schemas.container_schema import ContainerListResponse
+from core.database import get_db
+
+from core.models.user_model import UserModel
+
+from core.schemas.container_schema import ContainerListResponse, ContainerPatchRequest
 
 router = APIRouter()
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
@@ -50,7 +53,7 @@ def containerStop(name: str,):
     except docker.errors.NotFound:
         raise HTTPException(status_code=404, detail="No Such Container")
     except docker.errors.APIError:
-        raise HTTPException(status_code=404, detail="Docker Error")
+        raise HTTPException(status_code=500, detail="Docker Error")
     return {
         "status": "SUCCESS",
     }
@@ -68,7 +71,7 @@ def containerDelete(name: str,):
     except docker.errors.NotFound:
         raise HTTPException(status_code=404, detail="No Such Container")
     except docker.errors.APIError:
-        raise HTTPException(status_code=404, detail="Docker Error")
+        raise HTTPException(status_code=500, detail="Docker Error")
     return {
         "status": "SUCCESS",
     }
@@ -86,7 +89,35 @@ def containerRestart(name: str,):
     except docker.errors.NotFound:
         raise HTTPException(status_code=404, detail="No Such Container")
     except docker.errors.APIError:
-        raise HTTPException(status_code=404, detail="Docker Error")
+        raise HTTPException(status_code=500, detail="Docker Error")
+    return {
+        "status": "SUCCESS",
+    }
+
+@router.patch("/{name}/image")
+def containerPatch(name: str, containerPatchRequest: ContainerPatchRequest, db: Session = Depends(get_db)):
+    """
+    Request to patch the container
+
+    - **docker_image**: Container Image Name
+    \f
+    :param name: Container Name
+    """
+    try:
+        container = client.containers.get(name)
+        if container.status == "running":
+            container.stop()
+        container.remove()
+    except docker.errors.NotFound:
+        raise HTTPException(status_code=404, detail="No Such Container")
+    except docker.errors.APIError:
+        raise HTTPException(status_code=500, detail="Docker Error")
+    user = db.query(UserModel).filter(UserModel.username == name).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User Not Found")
+    user.docker_image = containerPatchRequest.docker_image
+    db.commit()
+    db.refresh(user)
     return {
         "status": "SUCCESS",
     }
