@@ -9,7 +9,8 @@ class ContainerBase(BaseModel):
     status: str
 
 class ContainerPatchRequest(BaseModel):
-    docker_image: str
+    repository: str
+    tag: str
 
 class ContainerListResponse(BaseModel):
     status: str
