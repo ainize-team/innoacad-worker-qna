@@ -105,19 +105,22 @@ def containerPatch(name: str, containerPatchRequest: ContainerPatchRequest, db: 
     """
     try:
         container = client.containers.get(name)
+        user = db.query(UserModel).filter(UserModel.username == name).first()
+        if user is None:
+            raise HTTPException(status_code=404, detail="User Not Found")
         if container.status == "running":
             container.stop()
+        client.images.pull(containerPatchRequest.repository, tag=containerPatchRequest.tag)
+        user.docker_image = containerPatchRequest.repository + ':' + containerPatchRequest.tag
+        db.commit()
+        db.refresh(user)
         container.remove()
+        return {
+            "status": "SUCCESS",
+        }
     except docker.errors.NotFound:
-        raise HTTPException(status_code=404, detail="No Such Container")
+        raise HTTPException(status_code=404, detail="No Such Container or Image")
     except docker.errors.APIError:
         raise HTTPException(status_code=500, detail="Docker Error")
-    user = db.query(UserModel).filter(UserModel.username == name).first()
-    if user is None:
-        raise HTTPException(status_code=404, detail="User Not Found")
-    user.docker_image = containerPatchRequest.docker_image
-    db.commit()
-    db.refresh(user)
-    return {
-        "status": "SUCCESS",
-    }
+    except:
+        raise HTTPException(status_code=500, detail="Server Error")
