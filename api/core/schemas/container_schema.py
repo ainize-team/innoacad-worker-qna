@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -8,6 +8,9 @@ class ContainerBase(BaseModel):
     name: str
     status: str
 
+class ContainerPatchRequest(BaseModel):
+    repository: str
+    tag: str
 
 class ContainerListResponse(BaseModel):
     status: str
